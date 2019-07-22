@@ -57,8 +57,8 @@ class BitcoinMainnet(AbstractNet):
     ADDRTYPE_P2PKH = 0
     ADDRTYPE_P2SH = 5
     SEGWIT_HRP = "bc"
-    GENESIS = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
-    DEFAULT_PORTS = {'t': '50001', 's': '50002'}
+    GENESIS = "afba8e143014b8c1d8df690bcf00b9f4eedb8e3ddcceaf90b156e9db34458321"
+    DEFAULT_PORTS = {'t': '60998', 's': '60999'}
     DEFAULT_SERVERS = read_json('servers.json', {})
     CHECKPOINTS = read_json('checkpoints.json', [])
 

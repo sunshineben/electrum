@@ -35,7 +35,8 @@ from .logging import get_logger, Logger
 
 _logger = get_logger(__name__)
 
-HEADER_SIZE = 80  # bytes
+#HEADER_SIZE = 80  # bytes
+HEADER_SIZE = 136  # bytes
 MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
 
 
@@ -51,7 +52,8 @@ def serialize_header(header_dict: dict) -> str:
         + rev_hex(header_dict['merkle_root']) \
         + int_to_hex(int(header_dict['timestamp']), 4) \
         + int_to_hex(int(header_dict['bits']), 4) \
-        + int_to_hex(int(header_dict['nonce']), 4)
+        + int_to_hex(int(header_dict['nonce']), 4) \
+        + rev_hex(header_dict['extra'])
     return s
 
 def deserialize_header(s: bytes, height: int) -> dict:
@@ -67,6 +69,7 @@ def deserialize_header(s: bytes, height: int) -> dict:
     h['timestamp'] = hex_to_int(s[68:72])
     h['bits'] = hex_to_int(s[72:76])
     h['nonce'] = hex_to_int(s[76:80])
+    h['extra'] = hash_encode(s[80:136])
     h['block_height'] = height
     return h
 
@@ -289,12 +292,12 @@ class Blockchain(Logger):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
             return
-        bits = cls.target_to_bits(target)
-        if bits != header.get('bits'):
-            raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
-        block_hash_as_num = int.from_bytes(bfh(_hash), byteorder='big')
-        if block_hash_as_num > target:
-            raise Exception(f"insufficient proof of work: {block_hash_as_num} vs target {target}")
+        #bits = cls.target_to_bits(target)
+        #if bits != header.get('bits'):
+        #    raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
+        #block_hash_as_num = int.from_bytes(bfh(_hash), byteorder='big')
+        #if block_hash_as_num > target:
+        #    raise Exception(f"insufficient proof of work: {block_hash_as_num} vs target {target}")
 
     def verify_chunk(self, index: int, data: bytes) -> None:
         num = len(data) // HEADER_SIZE
