@@ -218,7 +218,7 @@ class Plugin(TrustedCoinPlugin):
               "your wallet.  If you generated your seed on an offline "
               'computer, click on "{}" to close this window, move your '
               "wallet file to an online computer, and reopen it with "
-              "Electrum.").format(_('Cancel')),
+              "Lava.").format(_('Cancel')),
             _('If you are online, click on "{}" to continue.').format(_('Next'))
         ]
         msg = '\n\n'.join(msg)

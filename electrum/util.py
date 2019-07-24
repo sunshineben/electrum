@@ -65,9 +65,9 @@ def inv_dict(d):
 ca_path = certifi.where()
 
 
-base_units = {'BTC':8, 'mBTC':5, 'bits':2, 'sat':0}
+base_units = {'LV':8, 'mLV':5, 'bits':2, 'sat':0}
 base_units_inverse = inv_dict(base_units)
-base_units_list = ['BTC', 'mBTC', 'bits', 'sat']  # list(dict) does not guarantee order
+base_units_list = ['LV', 'mLV', 'bits', 'sat']  # list(dict) does not guarantee order
 
 DECIMAL_POINT_DEFAULT = 5  # mBTC
 
@@ -382,7 +382,7 @@ def assert_datadir_available(config_path):
         return
     else:
         raise FileNotFoundError(
-            'Electrum datadir does not exist. Was it deleted while running?' + '\n' +
+            'Lava datadir does not exist. Was it deleted while running?' + '\n' +
             'Should be at {}'.format(path))
 
 
@@ -472,11 +472,11 @@ def user_dir():
     if 'ANDROID_DATA' in os.environ:
         return android_data_dir()
     elif os.name == 'posix':
-        return os.path.join(os.environ["HOME"], ".electrum")
+        return os.path.join(os.environ["HOME"], ".lava")
     elif "APPDATA" in os.environ:
         return os.path.join(os.environ["APPDATA"], "Electrum")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum")
+        return os.path.join(os.environ["LOCALAPPDATA"], "Lava")
     else:
         #raise Exception("No home directory found in environment variables.")
         return

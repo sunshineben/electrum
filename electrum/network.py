@@ -186,7 +186,7 @@ class TxBroadcastHashMismatch(TxBroadcastError):
     def get_message_for_gui(self):
         return "{}\n{}\n\n{}" \
             .format(_("The server returned an unexpected transaction ID when broadcasting the transaction."),
-                    _("Consider trying to connect to a different server, or updating Electrum."),
+                    _("Consider trying to connect to a different server, or updating Lava."),
                     str(self))
 
 
@@ -194,7 +194,7 @@ class TxBroadcastServerReturnedError(TxBroadcastError):
     def get_message_for_gui(self):
         return "{}\n{}\n\n{}" \
             .format(_("The server returned an error when broadcasting the transaction."),
-                    _("Consider trying to connect to a different server, or updating Electrum."),
+                    _("Consider trying to connect to a different server, or updating Lava."),
                     str(self))
 
 
@@ -202,7 +202,7 @@ class TxBroadcastUnknownError(TxBroadcastError):
     def get_message_for_gui(self):
         return "{}\n{}" \
             .format(_("Unknown error when broadcasting the transaction."),
-                    _("Consider trying to connect to a different server, or updating Electrum."))
+                    _("Consider trying to connect to a different server, or updating Lava."))
 
 
 class UntrustedServerReturnedError(Exception):

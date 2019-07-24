@@ -238,9 +238,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         # If the option hasn't been set yet
         if config.get('check_updates') is None:
-            choice = self.question(title="Electrum - " + _("Enable update check"),
-                                   msg=_("For security reasons we advise that you always use the latest version of Electrum.") + " " +
-                                       _("Would you like to be notified when there is a newer version of Electrum available?"))
+            choice = self.question(title="Lava - " + _("Enable update check"),
+                                   msg=_("For security reasons we advise that you always use the latest version of Lava.") + " " +
+                                       _("Would you like to be notified when there is a newer version of Lava available?"))
             config.set_key('check_updates', bool(choice), save=True)
 
         if config.get('check_updates', False):
@@ -248,7 +248,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             # to prevent GC from getting in our way.
             def on_version_received(v):
                 if UpdateCheck.is_newer(v):
-                    self.update_check_button.setText(_("Update to Electrum {} is available").format(v))
+                    self.update_check_button.setText(_("Update to Lava {} is available").format(v))
                     self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
                     self.update_check_button.show()
             self._update_check_thread = UpdateCheckThread(self)
@@ -446,7 +446,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.setGeometry(100, 100, 840, 400)
 
     def watching_only_changed(self):
-        name = "Electrum Testnet" if constants.net.TESTNET else "Electrum"
+        name = "Lava Testnet" if constants.net.TESTNET else "Lava"
         title = '%s %s  -  %s' % (name, ELECTRUM_VERSION,
                                         self.wallet.basename())
         extra = [self.wallet.storage.get('wallet_type', '?')]
@@ -481,7 +481,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ''.join([
             _("You are in testnet mode."), ' ',
             _("Testnet coins are worthless."), '\n',
-            _("Testnet is separate from the main Bitcoin network. It is used for testing.")
+            _("Testnet is separate from the main Lava network. It is used for testing.")
         ])
         cb = QCheckBox(_("Don't show this again."))
         cb_checked = False
@@ -517,7 +517,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 shutil.copy2(path, new_path)
                 self.show_message(_("A copy of your wallet file was created in")+" '%s'" % str(new_path), title=_("Wallet backup created"))
             except BaseException as reason:
-                self.show_critical(_("Electrum was unable to copy your wallet file to the specified location.") + "\n" + str(reason), title=_("Unable to create backup"))
+                self.show_critical(_("Lava was unable to copy your wallet file to the specified location.") + "\n" + str(reason), title=_("Unable to create backup"))
 
     def update_recently_visited(self, filename):
         recent = self.config.get('recently_open', [])
@@ -590,9 +590,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         contacts_menu.addAction(_("&New"), self.new_contact_dialog)
         contacts_menu.addAction(_("Import"), lambda: self.contact_list.import_contacts())
         contacts_menu.addAction(_("Export"), lambda: self.contact_list.export_contacts())
-        invoices_menu = wallet_menu.addMenu(_("Invoices"))
-        invoices_menu.addAction(_("Import"), lambda: self.invoice_list.import_invoices())
-        invoices_menu.addAction(_("Export"), lambda: self.invoice_list.export_invoices())
+        #invoices_menu = wallet_menu.addMenu(_("Invoices"))
+        #invoices_menu.addAction(_("Import"), lambda: self.invoice_list.import_invoices())
+        #invoices_menu.addAction(_("Export"), lambda: self.invoice_list.export_invoices())
 
         wallet_menu.addSeparator()
         wallet_menu.addAction(_("Find"), self.toggle_search).setShortcut(QKeySequence("Ctrl+F"))
@@ -606,17 +606,17 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         add_toggle_action(view_menu, self.addresses_tab)
         add_toggle_action(view_menu, self.utxo_tab)
         add_toggle_action(view_menu, self.contacts_tab)
-        add_toggle_action(view_menu, self.console_tab)
+        #add_toggle_action(view_menu, self.console_tab)
 
         tools_menu = menubar.addMenu(_("&Tools"))
 
         # Settings / Preferences are all reserved keywords in macOS using this as work around
-        tools_menu.addAction(_("Electrum preferences") if sys.platform == 'darwin' else _("Preferences"), self.settings_dialog)
+        tools_menu.addAction(_("Lava preferences") if sys.platform == 'darwin' else _("Preferences"), self.settings_dialog)
         tools_menu.addAction(_("&Network"), lambda: self.gui_object.show_network_dialog(self))
-        tools_menu.addAction(_("&Plugins"), self.plugins_dialog)
-        tools_menu.addSeparator()
-        tools_menu.addAction(_("&Sign/verify message"), self.sign_verify_message)
-        tools_menu.addAction(_("&Encrypt/decrypt message"), self.encrypt_message)
+        #tools_menu.addAction(_("&Plugins"), self.plugins_dialog)
+        #tools_menu.addSeparator()
+        #tools_menu.addAction(_("&Sign/verify message"), self.sign_verify_message)
+        #tools_menu.addAction(_("&Encrypt/decrypt message"), self.encrypt_message)
         tools_menu.addSeparator()
 
         paytomany_menu = tools_menu.addAction(_("&Pay to many"), self.paytomany)
@@ -631,13 +631,13 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         help_menu = menubar.addMenu(_("&Help"))
         help_menu.addAction(_("&About"), self.show_about)
-        help_menu.addAction(_("&Check for updates"), self.show_update_check)
-        help_menu.addAction(_("&Official website"), lambda: webopen("https://electrum.org"))
-        help_menu.addSeparator()
-        help_menu.addAction(_("&Documentation"), lambda: webopen("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
-        help_menu.addAction(_("&Report Bug"), self.show_report_bug)
-        help_menu.addSeparator()
-        help_menu.addAction(_("&Donate to server"), self.donate_to_server)
+        #help_menu.addAction(_("&Check for updates"), self.show_update_check)
+        help_menu.addAction(_("&Official website"), lambda: webopen("http://lavatech.org/"))
+        #help_menu.addSeparator()
+        #help_menu.addAction(_("&Documentation"), lambda: webopen("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
+        #help_menu.addAction(_("&Report Bug"), self.show_report_bug)
+        #help_menu.addSeparator()
+        #help_menu.addAction(_("&Donate to server"), self.donate_to_server)
 
         self.setMenuBar(menubar)
 
@@ -650,13 +650,13 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.show_error(_('No donation address for this server'))
 
     def show_about(self):
-        QMessageBox.about(self, "Electrum",
+        QMessageBox.about(self, "Lava",
                           (_("Version")+" %s" % ELECTRUM_VERSION + "\n\n" +
-                           _("Electrum's focus is speed, with low resource usage and simplifying Bitcoin.") + " " +
+                           _("Lava's focus is speed, with low resource usage.") + " " +
                            _("You do not need to perform regular backups, because your wallet can be "
                               "recovered from a secret phrase that you can memorize or write on paper.") + " " +
                            _("Startup times are instant because it operates in conjunction with high-performance "
-                              "servers that handle the most complicated parts of the Bitcoin system.") + "\n\n" +
+                              "servers that handle the most complicated parts of the Lava system.") + "\n\n" +
                            _("Uses icons from the Icons8 icon pack (icons8.com).")))
 
     def show_update_check(self, version=None):
@@ -666,10 +666,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ' '.join([
             _("Please report any bugs as issues on github:<br/>"),
             f'''<a href="{constants.GIT_REPO_ISSUES_URL}">{constants.GIT_REPO_ISSUES_URL}</a><br/><br/>''',
-            _("Before reporting a bug, upgrade to the most recent version of Electrum (latest release or git HEAD), and include the version number in your report."),
+            _("Before reporting a bug, upgrade to the most recent version of Lava (latest release or git HEAD), and include the version number in your report."),
             _("Try to explain not only what the bug is, but how it occurs.")
          ])
-        self.show_message(msg, title="Electrum - " + _("Reporting Bugs"), rich_text=True)
+        self.show_message(msg, title="Lava - " + _("Reporting Bugs"), rich_text=True)
 
     def notify_transactions(self):
         if self.tx_notification_queue.qsize() == 0:
@@ -709,9 +709,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.tray:
             try:
                 # this requires Qt 5.9
-                self.tray.showMessage("Electrum", message, read_QIcon("electrum_dark_icon"), 20000)
+                self.tray.showMessage("Lava", message, read_QIcon("electrum_dark_icon"), 20000)
             except TypeError:
-                self.tray.showMessage("Electrum", message, QSystemTrayIcon.Information, 20000)
+                self.tray.showMessage("Lava", message, QSystemTrayIcon.Information, 20000)
 
 
 
@@ -902,7 +902,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.receive_address_e = ButtonsLineEdit()
         self.receive_address_e.addCopyButton(self.app)
         self.receive_address_e.setReadOnly(True)
-        msg = _('Bitcoin address where the payment should be received. Note that each payment request uses a different Bitcoin address.')
+        msg = _('Lava address where the payment should be received. Note that each payment request uses a different Lava address.')
         self.receive_address_label = HelpLabel(_('Receiving address'), msg)
         self.receive_address_e.textChanged.connect(self.update_receive_qr)
         self.receive_address_e.textChanged.connect(self.update_receive_address_styling)
@@ -933,7 +933,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ' '.join([
             _('Expiration date of your request.'),
             _('This information is seen by the recipient if you send them a signed payment request.'),
-            _('Expired requests have to be deleted manually from your list, in order to free the corresponding Bitcoin addresses.'),
+            _('Expired requests have to be deleted manually from your list, in order to free the corresponding Lava addresses.'),
             _('The bitcoin address never expires and will always be part of this electrum wallet.'),
         ])
         grid.addWidget(HelpLabel(_('Request expires'), msg), 3, 0)
@@ -1176,7 +1176,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.amount_e = BTCAmountEdit(self.get_decimal_point)
         self.payto_e = PayToEdit(self)
         msg = _('Recipient of the funds.') + '\n\n'\
-              + _('You may enter a Bitcoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Bitcoin address)')
+              + _('You may enter a Lava address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Lava address)')
         payto_label = HelpLabel(_('Pay to'), msg)
         grid.addWidget(payto_label, 1, 0)
         grid.addWidget(self.payto_e, 1, 1, 1, -1)
@@ -1222,7 +1222,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         hbox.addStretch(1)
         grid.addLayout(hbox, 4, 4)
 
-        msg = _('Bitcoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+        msg = _('Lava transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
               + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
               + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')
         self.fee_e_label = HelpLabel(_('Fee'), msg)
@@ -1284,7 +1284,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         def feerounding_onclick():
             text = (self.feerounding_text + '\n\n' +
-                    _('To somewhat protect your privacy, Electrum tries to create change with similar precision to other outputs.') + ' ' +
+                    _('To somewhat protect your privacy, Lava tries to create change with similar precision to other outputs.') + ' ' +
                     _('At most 100 satoshis might be lost due to this rounding.') + ' ' +
                     _("You can disable this setting in '{}'.").format(_('Preferences')) + '\n' +
                     _('Also, dust is not kept as change, but added to the fee.')  + '\n' +
@@ -1626,10 +1626,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         for o in outputs:
             if o.address is None:
-                self.show_error(_('Bitcoin Address is None'))
+                self.show_error(_('Lava Address is None'))
                 return True
             if o.type == TYPE_ADDRESS and not bitcoin.is_address(o.address):
-                self.show_error(_('Invalid Bitcoin Address'))
+                self.show_error(_('Invalid Lava Address'))
                 return True
             if o.value is None:
                 self.show_error(_('Invalid Amount'))
@@ -2333,14 +2333,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 "private key, and verifying with the corresponding public key. The "
                 "address you have entered does not have a unique public key, so these "
                 "operations cannot be performed.") + '\n\n' + \
-               _('The operation is undefined. Not just in Electrum, but in general.')
+               _('The operation is undefined. Not just in Lava, but in general.')
 
     @protected
     def do_sign(self, address, message, signature, password):
         address  = address.text().strip()
         message = message.toPlainText().strip()
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Bitcoin address.'))
+            self.show_message(_('Invalid Lava address.'))
             return
         if self.wallet.is_watching_only():
             self.show_message(_('This is a watching-only wallet.'))
@@ -2368,7 +2368,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         address  = address.text().strip()
         message = message.toPlainText().strip().encode('utf-8')
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Bitcoin address.'))
+            self.show_message(_('Invalid Lava address.'))
             return
         try:
             # This can throw on invalid base64
@@ -2502,7 +2502,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             tx = tx_from_str(txt)
             return Transaction(tx)
         except BaseException as e:
-            self.show_critical(_("Electrum was unable to parse your transaction") + ":\n" + str(e))
+            self.show_critical(_("Lava was unable to parse your transaction") + ":\n" + str(e))
             return
 
     def read_tx_from_qrcode(self):
@@ -2537,7 +2537,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             with open(fileName, "r") as f:
                 file_content = f.read()
         except (ValueError, IOError, os.error) as reason:
-            self.show_critical(_("Electrum was unable to open your transaction file") + "\n" + str(reason), title=_("Unable to read file or no transaction found"))
+            self.show_critical(_("Lava was unable to open your transaction file") + "\n" + str(reason), title=_("Unable to read file or no transaction found"))
             return
         return self.tx_from_text(file_content)
 
@@ -2649,7 +2649,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.do_export_privkeys(filename, private_keys, csv_button.isChecked())
         except (IOError, os.error) as reason:
             txt = "\n".join([
-                _("Electrum was unable to produce a private key-export."),
+                _("Lava was unable to produce a private key-export."),
                 str(reason)
             ])
             self.show_critical(txt, title=_("Unable to create csv"))
@@ -2960,7 +2960,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         units = base_units_list
         msg = (_('Base unit of your wallet.')
-               + '\n1 BTC = 1000 mBTC. 1 mBTC = 1000 bits. 1 bit = 100 sat.\n'
+               + '\n1 LV = 1000 mLV. 1 mLV = 1000 bits. 1 bit = 100 sat.\n'
                + _('This setting affects the Send tab, and all balance related fields.'))
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()
@@ -3246,7 +3246,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         run_hook('close_settings_dialog')
         if self.need_restart:
-            self.show_warning(_('Please restart Electrum to activate the new GUI settings'), title=_('Success'))
+            self.show_warning(_('Please restart Lava to activate the new GUI settings'), title=_('Success'))
 
 
     def closeEvent(self, event):
@@ -3277,7 +3277,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.gui_object.close_window(self)
 
     def plugins_dialog(self):
-        self.pluginsdialog = d = WindowModalDialog(self, _('Electrum Plugins'))
+        self.pluginsdialog = d = WindowModalDialog(self, _('Lava Plugins'))
 
         plugins = self.gui_object.plugins
 
