@@ -237,20 +237,20 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.fetch_alias()
 
         # If the option hasn't been set yet
-        if config.get('check_updates') is None:
-            choice = self.question(title="Lava - " + _("Enable update check"),
-                                   msg=_("For security reasons we advise that you always use the latest version of Lava.") + " " +
-                                       _("Would you like to be notified when there is a newer version of Lava available?"))
-            config.set_key('check_updates', bool(choice), save=True)
+        #if config.get('check_updates') is None:
+            #choice = self.question(title="Lava - " + _("Enable update check"),
+            #                       msg=_("For security reasons we advise that you always use the latest version of Lava.") + " " +
+            #                           _("Would you like to be notified when there is a newer version of Lava available?"))
+            #config.set_key('check_updates', bool(choice), save=True)
 
-        if config.get('check_updates', False):
+        #if config.get('check_updates', False):
             # The references to both the thread and the window need to be stored somewhere
             # to prevent GC from getting in our way.
-            def on_version_received(v):
-                if UpdateCheck.is_newer(v):
-                    self.update_check_button.setText(_("Update to Lava {} is available").format(v))
-                    self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
-                    self.update_check_button.show()
+            #def on_version_received(v):
+            #    if UpdateCheck.is_newer(v):
+            #        self.update_check_button.setText(_("Update to Lava {} is available").format(v))
+            #        self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
+            #        self.update_check_button.show()
             #self._update_check_thread = UpdateCheckThread(self)
             #self._update_check_thread.checked.connect(on_version_received)
             #self._update_check_thread.start()
