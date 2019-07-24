@@ -251,9 +251,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                     self.update_check_button.setText(_("Update to Lava {} is available").format(v))
                     self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
                     self.update_check_button.show()
-            self._update_check_thread = UpdateCheckThread(self)
-            self._update_check_thread.checked.connect(on_version_received)
-            self._update_check_thread.start()
+            #self._update_check_thread = UpdateCheckThread(self)
+            #self._update_check_thread.checked.connect(on_version_received)
+            #self._update_check_thread.start()
 
     def on_history(self, b):
         self.wallet.clear_coin_price_cache()
