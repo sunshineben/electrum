@@ -474,7 +474,7 @@ def user_dir():
     elif os.name == 'posix':
         return os.path.join(os.environ["HOME"], ".lava")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum")
+        return os.path.join(os.environ["APPDATA"], "Lava")
     elif "LOCALAPPDATA" in os.environ:
         return os.path.join(os.environ["LOCALAPPDATA"], "Lava")
     else:
