@@ -570,7 +570,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.password_menu = wallet_menu.addAction(_("&Password"), self.change_password_dialog)
         self.seed_menu = wallet_menu.addAction(_("&Seed"), self.show_seed_dialog)
         self.private_keys_menu = wallet_menu.addMenu(_("&Private keys"))
-        self.private_keys_menu.addAction(_("&Sweep"), self.sweep_key_dialog)
+        #self.private_keys_menu.addAction(_("&Sweep"), self.sweep_key_dialog)
         self.import_privkey_menu = self.private_keys_menu.addAction(_("&Import"), self.do_import_privkey)
         self.export_menu = self.private_keys_menu.addAction(_("&Export"), self.export_privkeys_dialog)
         self.import_address_menu = wallet_menu.addAction(_("Import addresses"), self.import_addresses)
@@ -584,7 +584,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         history_menu = wallet_menu.addMenu(_("&History"))
         history_menu.addAction(_("&Filter"), lambda: self.history_list.toggle_toolbar(self.config))
         history_menu.addAction(_("&Summary"), self.history_list.show_summary)
-        history_menu.addAction(_("&Plot"), self.history_list.plot_history_dialog)
+        #history_menu.addAction(_("&Plot"), self.history_list.plot_history_dialog)
         history_menu.addAction(_("&Export"), self.history_list.export_history_dialog)
         contacts_menu = wallet_menu.addMenu(_("Contacts"))
         contacts_menu.addAction(_("&New"), self.new_contact_dialog)
@@ -625,7 +625,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         raw_transaction_menu.addAction(_("&From file"), self.do_process_from_file)
         raw_transaction_menu.addAction(_("&From text"), self.do_process_from_text)
         raw_transaction_menu.addAction(_("&From the blockchain"), self.do_process_from_txid)
-        raw_transaction_menu.addAction(_("&From QR code"), self.read_tx_from_qrcode)
+        #raw_transaction_menu.addAction(_("&From QR code"), self.read_tx_from_qrcode)
         self.raw_transaction_menu = raw_transaction_menu
         run_hook('init_menubar_tools', self, tools_menu)
 
@@ -1319,7 +1319,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         grid.addLayout(vbox_feecontrol, 5, 1, 1, -1)
 
-        if not self.config.get('show_fee', False):
+        if not self.config.get('show_fee', True):
             self.fee_adv_controls.setVisible(False)
 
         self.preview_button = EnterButton(_("Preview"), self.do_preview)
@@ -2873,10 +2873,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.config.set_key('dynamic_fees', x>0)
             self.fee_slider.update()
         fee_type_combo.currentIndexChanged.connect(on_fee_type)
-        fee_widgets.append((fee_type_label, fee_type_combo))
+        #fee_widgets.append((fee_type_label, fee_type_combo))
 
         feebox_cb = QCheckBox(_('Edit fees manually'))
-        feebox_cb.setChecked(self.config.get('show_fee', False))
+        feebox_cb.setChecked(self.config.get('show_fee', True))
         feebox_cb.setToolTip(_("Show fee edit box in send tab."))
         def on_feebox(x):
             self.config.set_key('show_fee', x == Qt.Checked)
@@ -2895,7 +2895,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.config.set_key('use_rbf', bool(x))
             batch_rbf_cb.setEnabled(bool(x))
         use_rbf_cb.stateChanged.connect(on_use_rbf)
-        fee_widgets.append((use_rbf_cb, None))
+        #fee_widgets.append((use_rbf_cb, None))
 
         batch_rbf_cb = QCheckBox(_('Batch RBF transactions'))
         batch_rbf_cb.setChecked(self.config.get('batch_rbf', False))
@@ -2906,7 +2906,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         def on_batch_rbf(x):
             self.config.set_key('batch_rbf', bool(x))
         batch_rbf_cb.stateChanged.connect(on_batch_rbf)
-        fee_widgets.append((batch_rbf_cb, None))
+        #fee_widgets.append((batch_rbf_cb, None))
 
         msg = _('OpenAlias record, used to receive coins and to sign payment requests.') + '\n\n'\
               + _('The following alias providers are available:') + '\n'\
@@ -2994,7 +2994,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             be_result = block_explorers[block_ex_combo.currentIndex()]
             self.config.set_key('block_explorer', be_result, True)
         block_ex_combo.currentIndexChanged.connect(on_be)
-        gui_widgets.append((block_ex_label, block_ex_combo))
+        #gui_widgets.append((block_ex_label, block_ex_combo))
 
         from electrum import qrscanner
         system_cameras = qrscanner._find_system_cameras()
@@ -3010,7 +3010,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         qr_combo.setEnabled(qrscanner.libzbar is not None)
         on_video_device = lambda x: self.config.set_key("video_device", qr_combo.itemData(x), True)
         qr_combo.currentIndexChanged.connect(on_video_device)
-        gui_widgets.append((qr_label, qr_combo))
+        #gui_widgets.append((qr_label, qr_combo))
 
         colortheme_combo = QComboBox()
         colortheme_combo.addItem(_('Light'), 'default')
@@ -3211,11 +3211,11 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         fiat_widgets.append((QLabel(_('Source')), ex_combo))
 
         tabs_info = [
-            (fee_widgets, _('Fees')),
+            #(fee_widgets, _('Fees')),
             (tx_widgets, _('Transactions')),
             (gui_widgets, _('General')),
-            (fiat_widgets, _('Fiat')),
-            (id_widgets, _('Identity')),
+            #(fiat_widgets, _('Fiat')),
+            #(id_widgets, _('Identity')),
         ]
         for widgets, name in tabs_info:
             tab = QWidget()
