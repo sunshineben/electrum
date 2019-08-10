@@ -31,20 +31,20 @@ Builder.load_string('''
                 padding: '10dp'
                 SettingsItem:
                     lang: settings.get_language_name()
-                    title: 'Language' + ': ' + str(self.lang)
-                    description: _('Language')
+                    title: _('Language') + ': ' + str(self.lang)
+                    #description: _('Language')
                     action: partial(root.language_dialog, self)
                 CardSeparator
                 SettingsItem:
                     disabled: root.disable_pin
                     title: _('PIN code')
-                    description: _("Change your PIN code.")
+                    #description: _("Change your PIN code.")
                     action: partial(root.change_password, self)
                 CardSeparator
                 SettingsItem:
                     bu: app.base_unit
                     title: _('Denomination') + ': ' + self.bu
-                    description: _("Base unit for Lava amounts.")
+                    #description: _("Base unit for Lava amounts.")
                     action: partial(root.unit_dialog, self)
                 CardSeparator
                 #SettingsItem:
@@ -72,14 +72,14 @@ Builder.load_string('''
                 SettingsItem:
                     status: _('Yes') if app.use_unconfirmed else _('No')
                     title: _('Spend unconfirmed') + ': ' + self.status
-                    description: _("Use unconfirmed coins in transactions.")
+                    #description: _("Use unconfirmed coins in transactions.")
                     message: _('Spend unconfirmed coins')
                     action: partial(root.boolean_dialog, 'use_unconfirmed', _('Use unconfirmed'), self.message)
                 CardSeparator
                 SettingsItem:
                     status: _('Yes') if app.use_change else _('No')
                     title: _('Use change addresses') + ': ' + self.status
-                    description: _("Send your change to separate addresses.")
+                    #description: _("Send your change to separate addresses.")
                     message: _('Send excess coins to change addresses')
                     action: partial(root.boolean_dialog, 'use_change', _('Use change addresses'), self.message)
 
