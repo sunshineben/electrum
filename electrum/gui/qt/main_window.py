@@ -2960,7 +2960,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         units = base_units_list
         msg = (_('Base unit of your wallet.')
-               + '\n1 LV = 1000 mLV. 1 mLV = 1000 bits. 1 bit = 100 sat.\n'
+               + '\n1 LV = 1000 mLV.\n'
                + _('This setting affects the Send tab, and all balance related fields.'))
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()
