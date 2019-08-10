@@ -2,6 +2,7 @@ from kivy.app import App
 from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
+from electrum.gui.kivy.i18n import _
 
 Builder.load_string('''
 <CheckBoxDialog@Popup>
@@ -30,12 +31,12 @@ Builder.load_string('''
             orientation: 'horizontal'
             size_hint: 1, 0.2
             Button:
-                text: 'Cancel'
+                text: _('Cancel')
                 size_hint: 0.5, None
                 height: '48dp'
                 on_release: popup.dismiss()
             Button:
-                text: 'OK'
+                text: _('OK')
                 size_hint: 0.5, None
                 height: '48dp'
                 on_release:
