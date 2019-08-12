@@ -127,7 +127,9 @@ class SettingsDialog(Factory.Popup):
             def cb(key):
                 self.config.set_key("language", key, True)
                 item.lang = self.get_language_name()
-                self.app.language = key
+                #self.app.language = key
+                #app = App.get_running_app()
+                #app.stop()
                 #self.app.on_language('', key)
             self._language_dialog = ChoiceDialog(_('Language'), languages, l, cb)
         self._language_dialog.open()
