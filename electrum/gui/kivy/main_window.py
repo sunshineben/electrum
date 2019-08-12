@@ -79,7 +79,7 @@ from electrum.util import (base_units, NoDynamicFeeEstimates, decimal_point_to_b
 class ElectrumWindow(App):
 
     electrum_config = ObjectProperty(None)
-    language = StringProperty('en')
+    language = StringProperty('zh_CN')
 
     # properties might be updated by the network
     num_blocks = NumericProperty(0)
@@ -287,7 +287,7 @@ class ElectrumWindow(App):
 
         title = _('Lava App')
         self.electrum_config = config = kwargs.get('config', None)
-        self.language = config.get('language', 'en')
+        self.language = config.get('language', 'zh_CN')
         self.network = network = kwargs.get('network', None)  # type: Network
         if self.network:
             self.num_blocks = self.network.get_local_height()

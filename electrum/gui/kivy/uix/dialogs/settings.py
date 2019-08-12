@@ -116,18 +116,19 @@ class SettingsDialog(Factory.Popup):
         self.use_encryption = self.wallet.has_password() if self.wallet else False
 
     def get_language_name(self):
-        return languages.get(self.config.get('language', 'en_UK'), '')
+        return languages.get(self.config.get('language', 'zh_CN'), '')
 
     def change_password(self, item, dt):
         self.app.change_password(self.update)
 
     def language_dialog(self, item, dt):
         if self._language_dialog is None:
-            l = self.config.get('language', 'en_UK')
+            l = self.config.get('language', 'zh_CN')
             def cb(key):
                 self.config.set_key("language", key, True)
                 item.lang = self.get_language_name()
                 self.app.language = key
+                #self.app.on_language('', key)
             self._language_dialog = ChoiceDialog(_('Language'), languages, l, cb)
         self._language_dialog.open()
 
