@@ -42,7 +42,7 @@ def set_language(x):
 
 
 languages = {
-    '': _('Default'),
+    #'': _('Default'),
     #'ar_SA': _('Arabic'),
     #'bg_BG': _('Bulgarian'),
     #'cs_CZ': _('Czech'),
