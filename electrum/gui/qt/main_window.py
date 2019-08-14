@@ -2825,7 +2825,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         from electrum.i18n import languages
         lang_combo.addItems(list(languages.values()))
         lang_keys = list(languages.keys())
-        lang_cur_setting = self.config.get("language", 'en_UK')
+        lang_cur_setting = self.config.get("language", 'zh_CN')
         try:
             index = lang_keys.index(lang_cur_setting)
         except ValueError:  # not in list
