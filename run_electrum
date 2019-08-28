@@ -352,7 +352,7 @@ if __name__ == '__main__':
         constants.set_regtest()
     elif config.get('simnet'):
         constants.set_simnet()
-    constants.set_testnet()
+    #constants.set_testnet()
     if cmdname == 'gui':
         configure_logging(config)
         fd, server = daemon.get_fd_or_server(config)
