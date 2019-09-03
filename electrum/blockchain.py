@@ -303,7 +303,8 @@ class Blockchain(Logger):
         num = len(data) // HEADER_SIZE
         start_height = index * 2016
         prev_hash = self.get_hash(start_height - 1)
-        target = self.get_target(index-1)
+        #target = self.get_target(index-1)
+        target = 0
         for i in range(num):
             height = start_height + i
             try:
@@ -373,8 +374,8 @@ class Blockchain(Logger):
         they will be stored in different files."""
         if self.parent is None:
             return False
-        if self.parent.get_chainwork() >= self.get_chainwork():
-            return False
+        #if self.parent.get_chainwork() >= self.get_chainwork():
+        #    return False
         self.logger.info(f"swapping {self.forkpoint} {self.parent.forkpoint}")
         parent_branch_size = self.parent.height() - self.forkpoint + 1
         forkpoint = self.forkpoint  # type: Optional[int]
@@ -587,7 +588,8 @@ class Blockchain(Logger):
         if prev_hash != header.get('prev_block_hash'):
             return False
         try:
-            target = self.get_target(height // 2016 - 1)
+            #target = self.get_target(height // 2016 - 1)
+            target = 0
         except MissingHeader:
             return False
         try:
@@ -613,7 +615,8 @@ class Blockchain(Logger):
         n = self.height() // 2016
         for index in range(n):
             h = self.get_hash((index+1) * 2016 -1)
-            target = self.get_target(index)
+            #target = self.get_target(index)
+            target = 0
             cp.append((h, target))
         return cp
 
