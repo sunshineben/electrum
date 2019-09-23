@@ -95,7 +95,7 @@ Builder.load_string('''
                 Button:
                     size_hint: 1, None
                     height: '48dp'
-                    text: 'Clear'
+                    text: _('Clear')
                     on_release:
                         kb.amount = ''
                         kb.fiat_amount = ''
