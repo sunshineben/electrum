@@ -89,7 +89,7 @@ class BitcoinTestnet(AbstractNet):
     ADDRTYPE_P2SH = 196
     SEGWIT_HRP = "tb"
     GENESIS = "54746281650914f19f4b4e80002c4a9b7ab6e2334b25d6e141bc9130ea4ec572"
-    DEFAULT_PORTS = {'t': '60998', 's': '60999'}
+    DEFAULT_PORTS = {'t': '20998', 's': '20999'}
     DEFAULT_SERVERS = read_json('servers_testnet.json', {})
     CHECKPOINTS = read_json('checkpoints_testnet.json', [])
 
