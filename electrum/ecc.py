@@ -266,6 +266,17 @@ class ECPubkey(object):
         # check message
         self.verify_message_hash(sig65[1:], h)
 
+    def verify_compact_for_address(self, sig65: bytes, message: bytes) -> None:
+        assert_bytes(message)
+        #h = sha256d(msg_magic(message))
+        h = message
+        public_key, compressed = self.from_signature65(sig65, h)
+        # check public key
+        if public_key != self:
+            raise Exception("Bad signature")
+        # check message
+        self.verify_message_hash(sig65[1:], h)
+
     def verify_message_hash(self, sig_string: bytes, msg_hash: bytes) -> None:
         assert_bytes(sig_string)
         if len(sig_string) != 64:
@@ -312,7 +323,8 @@ class ECPubkey(object):
 def msg_magic(message: bytes) -> bytes:
     from .bitcoin import var_int
     length = bfh(var_int(len(message)))
-    return b"\x18Bitcoin Signed Message:\n" + length + message
+    #return b"\x18Bitcoin Signed Message:\n" + length + message
+    return b"\x15Lava Signed Message:\n" + length + message
 
 
 def verify_message_with_address(address: str, sig65: bytes, message: bytes, *, net=None):
@@ -416,10 +428,36 @@ class ECPrivkey(ECPubkey):
                 raise Exception("error: cannot sign message. no recid fits..")
 
         message = to_bytes(message, 'utf8')
+        print('magic=', bh2u(msg_magic(message)))
         msg_hash = sha256d(msg_magic(message))
+        print('msg hash=', bh2u(msg_hash))
         sig_string = self.sign(msg_hash,
                                sigencode=sig_string_from_r_and_s,
                                sigdecode=get_r_and_s_from_sig_string)
+        print('msg sig_string=', bh2u(sig_string))
+        sig65, recid = bruteforce_recid(sig_string)
+        return sig65
+
+    def sign_compact(self, message: bytes, is_compressed: bool) -> bytes:
+        def bruteforce_recid(sig_string):
+            for recid in range(4):
+                sig65 = construct_sig65(sig_string, recid, is_compressed)
+                try:
+                    self.verify_compact_for_address(sig65, message)
+                    return sig65, recid
+                except Exception as e:
+                    continue
+            else:
+                raise Exception("error: cannot sign message. no recid fits..")
+
+        #message = to_bytes(message, 'utf8')
+        #print('magic=', bh2u(msg_magic(message)))
+        #msg_hash = sha256d(msg_magic(message))
+        msg_hash = message
+        sig_string = self.sign(msg_hash,
+                               sigencode=sig_string_from_r_and_s,
+                               sigdecode=get_r_and_s_from_sig_string)
+        print('sig_string=', bh2u(sig_string))
         sig65, recid = bruteforce_recid(sig_string)
         return sig65
 
