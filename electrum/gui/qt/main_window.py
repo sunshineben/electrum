@@ -89,6 +89,7 @@ from .installwizard import WIF_HELP_TEXT
 from .history_list import HistoryList, HistoryModel
 from .update_checker import UpdateCheck, UpdateCheckThread
 
+#from electrum.crypto import sha256d, sha256, hash_160, hmac_oneshot
 
 class StatusBarButton(QPushButton):
     def __init__(self, icon, tooltip, func):
@@ -2339,6 +2340,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
     def do_sign(self, address, message, signature, password):
         address  = address.text().strip()
         message = message.toPlainText().strip()
+        #test_str = (sha256d(bfh('2c01000000019c684c3fb23c77fab8fe2865a37f68755a7c95bf5f2f092f30769b08860db1c88ac9552079c667d1f7acefb902c277aad147894bdc233c0c99fce89b95285f7ee94a7787ce6e9601000000')))
+        #test_str = bfh('622014798f4ee27906e58b3252c2734f7f89b59be450c83c9956ec790390ca8d')
+        #test_str = bfh('4ad006a66fc33cfd230c19471701460bbc639cc59f0df01dea01b95b47b56217')
+        #print('hash=', bh2u(test_str))
         if not bitcoin.is_address(address):
             self.show_message(_('Invalid Lava address.'))
             return
@@ -2353,11 +2358,15 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.show_message(_('Cannot sign messages with this type of address:') + \
                               ' ' + txin_type + '\n\n' + self.msg_sign)
             return
+        #message = bfh('622014798f4ee27906e58b3252c2734f7f89b59be450c83c9956ec790390ca8d')
         task = partial(self.wallet.sign_message, address, message, password)
+        #task = partial(self.wallet.sign_message, address, test_str[::-1], password)
+        #task = partial(self.wallet.sign_compact, address, test_str, password)
 
         def show_signed_message(sig):
             try:
                 signature.setText(base64.b64encode(sig).decode('ascii'))
+                #print('sig=', bh2u(sig))
             except RuntimeError:
                 # (signature) wrapped C/C++ object has been deleted
                 pass
