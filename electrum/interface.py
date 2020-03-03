@@ -429,7 +429,7 @@ class Interface(Logger):
         finally:
             try: self._requested_chunks.remove(index)
             except KeyError: pass
-        conn = self.blockchain.connect_chunk(index, res['hex'])
+        conn = self.blockchain.connect_chunk(index, res['hex'], res['count'])
         if not conn:
             return conn, 0
         return conn, res['count']

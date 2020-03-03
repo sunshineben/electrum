@@ -61,6 +61,9 @@ class BitcoinMainnet(AbstractNet):
     DEFAULT_PORTS = {'t': '60998', 's': '60999'}
     DEFAULT_SERVERS = read_json('servers.json', {})
     CHECKPOINTS = read_json('checkpoints.json', [])
+    HDR_V4_SIZE = 156
+    HDR_V4_HEIGHT = 67584
+    HDR_V4_OLD_LENGTH = HDR_V4_HEIGHT * 136
 
     XPRV_HEADERS = {
         'standard':    0x0488ade4,  # xprv
@@ -92,6 +95,10 @@ class BitcoinTestnet(AbstractNet):
     DEFAULT_PORTS = {'t': '20998', 's': '20999'}
     DEFAULT_SERVERS = read_json('servers_testnet.json', {})
     CHECKPOINTS = read_json('checkpoints_testnet.json', [])
+    HDR_V4_SIZE = 156
+    HDR_V4_HEIGHT = 13115
+    HDR_V4_OLD_LENGTH = HDR_V4_HEIGHT * 136
+
 
     XPRV_HEADERS = {
         'standard':    0x04358394,  # tprv

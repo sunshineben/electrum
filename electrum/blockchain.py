@@ -59,8 +59,15 @@ def serialize_header(header_dict: dict) -> str:
 def deserialize_header(s: bytes, height: int) -> dict:
     if not s:
         raise InvalidHeader('Invalid header: {}'.format(s))
-    if len(s) != HEADER_SIZE:
-        raise InvalidHeader('Invalid header length: {}'.format(len(s)))
+    #if len(s) != HEADER_SIZE:
+    #    raise InvalidHeader('Invalid header length: {}'.format(len(s)))
+    if height >= constants.net.HDR_V4_HEIGHT:
+        if len(s) != constants.net.HDR_V4_SIZE:
+            raise InvalidHeader('Invalid header length: {}'.format(len(s)))
+    else:
+        if len(s) != HEADER_SIZE:
+            raise InvalidHeader('Invalid header length: {}'.format(len(s)))
+
     hex_to_int = lambda s: int.from_bytes(s, byteorder='little')
     h = {}
     h['version'] = hex_to_int(s[0:4])
@@ -69,7 +76,11 @@ def deserialize_header(s: bytes, height: int) -> dict:
     h['timestamp'] = hex_to_int(s[68:72])
     h['bits'] = hex_to_int(s[72:76])
     h['nonce'] = hex_to_int(s[76:80])
-    h['extra'] = hash_encode(s[80:136])
+    #h['extra'] = hash_encode(s[80:136])
+    if height >= constants.net.HDR_V4_HEIGHT:
+        h['extra'] = hash_encode(s[80:156])
+    else:
+        h['extra'] = hash_encode(s[80:136])
     h['block_height'] = height
     return h
 
@@ -281,13 +292,21 @@ class Blockchain(Logger):
     @with_lock
     def update_size(self) -> None:
         p = self.path()
-        self._size = os.path.getsize(p)//HEADER_SIZE if os.path.exists(p) else 0
+        #self._size = os.path.getsize(p)//HEADER_SIZE if os.path.exists(p) else 0
+        if os.path.exists(p):
+            size = os.path.getsize(p)
+            if size <= constants.net.HDR_V4_OLD_LENGTH:
+                self._size = size//HEADER_SIZE
+            else:
+                self._size = constants.net.HDR_V4_HEIGHT + (size-constants.net.HDR_V4_OLD_LENGTH)//constants.net.HDR_V4_SIZE
+        else:
+            self._size = 0
 
     @classmethod
     def verify_header(cls, header: dict, prev_hash: str, target: int, expected_header_hash: str=None) -> None:
         _hash = hash_header(header)
         if expected_header_hash and expected_header_hash != _hash:
-            raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash))
+            raise Exception("hash mismatches with expected: {} vs {} {}".format(expected_header_hash, _hash, header['block_height']))
         if prev_hash != header.get('prev_block_hash'):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
@@ -299,19 +318,28 @@ class Blockchain(Logger):
         #if block_hash_as_num > target:
         #    raise Exception(f"insufficient proof of work: {block_hash_as_num} vs target {target}")
 
-    def verify_chunk(self, index: int, data: bytes) -> None:
-        num = len(data) // HEADER_SIZE
+    def verify_chunk(self, index: int, data: bytes, count=0) -> None:
+        #num = len(data) // HEADER_SIZE
+        num = count
         start_height = index * 2016
         prev_hash = self.get_hash(start_height - 1)
         #target = self.get_target(index-1)
         target = 0
+        old_num = 0
         for i in range(num):
             height = start_height + i
             try:
                 expected_header_hash = self.get_hash(height)
             except MissingHeader:
                 expected_header_hash = None
-            raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
+            #raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
+            if height < constants.net.HDR_V4_HEIGHT:
+                raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
+                old_num = old_num + 1
+            else:
+                start_idx = old_num*HEADER_SIZE + (i-old_num)*constants.net.HDR_V4_SIZE
+                end_idx = old_num*HEADER_SIZE + (i-old_num+1)*constants.net.HDR_V4_SIZE
+                raw_header = data[start_idx : end_idx]
             header = deserialize_header(raw_header, index*2016 + i)
             self.verify_header(header, prev_hash, target, expected_header_hash)
             prev_hash = hash_header(header)
@@ -330,7 +358,7 @@ class Blockchain(Logger):
         return os.path.join(d, filename)
 
     @with_lock
-    def save_chunk(self, index: int, chunk: bytes):
+    def save_chunk(self, index: int, chunk: bytes, count=0):
         assert index >= 0, index
         chunk_within_checkpoint_region = index < len(self.checkpoints)
         # chunks in checkpoint region are the responsibility of the 'main chain'
@@ -338,9 +366,13 @@ class Blockchain(Logger):
             main_chain = get_best_chain()
             main_chain.save_chunk(index, chunk)
             return
-
-        delta_height = (index * 2016 - self.forkpoint)
-        delta_bytes = delta_height * HEADER_SIZE
+        #delta_height = (index * 2016 - self.forkpoint)
+        #delta_bytes = delta_height * HEADER_SIZE            
+        if (index * 2016 < constants.net.HDR_V4_HEIGHT):
+            delta_height = (index * 2016 - self.forkpoint)
+            delta_bytes = delta_height * HEADER_SIZE
+        else: # (index * 2016 >= constants.net.HDR_V4_HEIGHT)
+            delta_bytes = constants.net.HDR_V4_OLD_LENGTH + (index * 2016-constants.net.HDR_V4_HEIGHT)*constants.net.HDR_V4_SIZE
         # if this chunk contains our forkpoint, only save the part after forkpoint
         # (the part before is the responsibility of the parent)
         if delta_bytes < 0:
@@ -378,6 +410,13 @@ class Blockchain(Logger):
         #    return False
         self.logger.info(f"swapping {self.forkpoint} {self.parent.forkpoint}")
         parent_branch_size = self.parent.height() - self.forkpoint + 1
+        # with issue +1 
+        if (self.parent.height() < constants.net.HDR_V4_HEIGHT):
+            delta_height = self.parent.height() - self.forkpoint + 1
+            parent_branch_size = delta_height * HEADER_SIZE
+        else: # ( >= constants.net.HDR_V4_HEIGHT)
+            parent_branch_size = constants.net.HDR_V4_OLD_LENGTH + (self.parent.height()-constants.net.HDR_V4_HEIGHT+1)*constants.net.HDR_V4_SIZE
+
         forkpoint = self.forkpoint  # type: Optional[int]
         parent = self.parent  # type: Optional[Blockchain]
         child_old_id = self.get_id()
@@ -392,15 +431,25 @@ class Blockchain(Logger):
         self.assert_headers_file_available(parent.path())
         assert forkpoint > parent.forkpoint, (f"forkpoint of parent chain ({parent.forkpoint}) "
                                               f"should be at lower height than children's ({forkpoint})")
+        delta_bytes = self.get_delta_bytes(forkpoint, parent.forkpoint)
         with open(parent.path(), 'rb') as f:
-            f.seek((forkpoint - parent.forkpoint)*HEADER_SIZE)
-            parent_data = f.read(parent_branch_size*HEADER_SIZE)
+            #f.seek((forkpoint - parent.forkpoint)*HEADER_SIZE)
+            #parent_data = f.read(parent_branch_size*HEADER_SIZE)
+            f.seek(delta_bytes)
+            parent_data = f.read(parent_branch_size)
         self.write(parent_data, 0)
-        parent.write(my_data, (forkpoint - parent.forkpoint)*HEADER_SIZE)
+        #parent.write(my_data, (forkpoint - parent.forkpoint)*HEADER_SIZE)
+        parent.write(my_data, delta_bytes)
+        # calc header size
+        if forkpoint >= constants.net.HDR_V4_HEIGHT:
+            hd_size = constants.net.HDR_V4_SIZE
+        else:
+            hd_size = HEADER_SIZE
         # swap parameters
         self.parent, parent.parent = parent.parent, self  # type: Optional[Blockchain], Optional[Blockchain]
         self.forkpoint, parent.forkpoint = parent.forkpoint, self.forkpoint
-        self._forkpoint_hash, parent._forkpoint_hash = parent._forkpoint_hash, hash_raw_header(bh2u(parent_data[:HEADER_SIZE]))
+        #self._forkpoint_hash, parent._forkpoint_hash = parent._forkpoint_hash, hash_raw_header(bh2u(parent_data[:HEADER_SIZE]))
+        self._forkpoint_hash, parent._forkpoint_hash = parent._forkpoint_hash, hash_raw_header(bh2u(parent_data[:hd_size]))
         self._prev_hash, parent._prev_hash = parent._prev_hash, self._prev_hash
         # parent's new name
         os.replace(child_old_name, parent.path())
@@ -424,12 +473,37 @@ class Blockchain(Logger):
         else:
             raise FileNotFoundError('Cannot find headers file but headers_dir is there. Should be at {}'.format(path))
 
+    def get_delta_bytes(self, high, low):
+        #if (low == 0):
+        if (high < constants.net.HDR_V4_HEIGHT):
+            delta_height = (high - low)
+            delta_bytes = delta_height * HEADER_SIZE
+        else: # (high >= constants.net.HDR_V4_HEIGHT)
+            delta_bytes = constants.net.HDR_V4_OLD_LENGTH + (high-constants.net.HDR_V4_HEIGHT)*constants.net.HDR_V4_SIZE
+        return delta_bytes
+        # fixme : maybe bug in forking mode
+        if (high < constants.net.HDR_V4_HEIGHT):
+            if(low < constants.net.HDR_V4_HEIGHT):
+                delta_height = (high - low)
+                delta_bytes = delta_height * HEADER_SIZE
+            else:
+                delta_bytes = ((constants.net.HDR_V4_HEIGHT-1-high)*HEADER_SIZE + (low-constants.net.HDR_V4_HEIGHT+1)*constants.net.HDR_V4_SIZE)
+        else: # (high >= constants.net.HDR_V4_HEIGHT)
+            if(low >= constants.net.HDR_V4_HEIGHT):
+                delta_height = (high - low)
+                delta_bytes = delta_height * constants.net.HDR_V4_SIZE
+            else:
+                delta_bytes = ((constants.net.HDR_V4_HEIGHT-1-low)*HEADER_SIZE + (high-constants.net.HDR_V4_HEIGHT+1)*constants.net.HDR_V4_SIZE)
+        return delta_bytes
+                
     @with_lock
     def write(self, data: bytes, offset: int, truncate: bool=True) -> None:
         filename = self.path()
+        file_size = os.path.getsize(filename)
         self.assert_headers_file_available(filename)
         with open(filename, 'rb+') as f:
-            if truncate and offset != self._size * HEADER_SIZE:
+            #if truncate and offset != self._size * HEADER_SIZE:
+            if truncate and offset != file_size:
                 f.seek(offset)
                 f.truncate()
             f.seek(offset)
@@ -444,8 +518,11 @@ class Blockchain(Logger):
         data = bfh(serialize_header(header))
         # headers are only _appended_ to the end:
         assert delta == self.size(), (delta, self.size())
-        assert len(data) == HEADER_SIZE
-        self.write(data, delta*HEADER_SIZE)
+        #assert len(data) == HEADER_SIZE
+        assert (len(data) == HEADER_SIZE) or (len(data) == constants.net.HDR_V4_SIZE)
+        #self.write(data, delta*HEADER_SIZE)
+        delta_bytes = self.get_delta_bytes(header.get('block_height'), self.forkpoint)
+        self.write(data, delta_bytes)
         self.swap_with_parent()
 
     @with_lock
@@ -459,12 +536,24 @@ class Blockchain(Logger):
         delta = height - self.forkpoint
         name = self.path()
         self.assert_headers_file_available(name)
+        #with open(name, 'rb') as f:
+        #    f.seek(delta * HEADER_SIZE)
+        #    h = f.read(HEADER_SIZE)
+        #    if len(h) < HEADER_SIZE:
+        #        raise Exception('Expected to read a full header. This was only {} bytes'.format(len(h)))
+        #if h == bytes([0])*HEADER_SIZE:
+        #    return None
+        delta_bytes = self.get_delta_bytes(height, self.forkpoint)
+        if height >= constants.net.HDR_V4_HEIGHT:
+            hd_size = constants.net.HDR_V4_SIZE
+        else:
+            hd_size = HEADER_SIZE
         with open(name, 'rb') as f:
-            f.seek(delta * HEADER_SIZE)
-            h = f.read(HEADER_SIZE)
-            if len(h) < HEADER_SIZE:
+            f.seek(delta_bytes)
+            h = f.read(hd_size)
+            if len(h) < hd_size:
                 raise Exception('Expected to read a full header. This was only {} bytes'.format(len(h)))
-        if h == bytes([0])*HEADER_SIZE:
+        if h == bytes([0])*hd_size:
             return None
         return deserialize_header(h, height)
 
@@ -598,17 +687,17 @@ class Blockchain(Logger):
             return False
         return True
 
-    def connect_chunk(self, idx: int, hexdata: str) -> bool:
+    def connect_chunk(self, idx: int, hexdata: str, count=0) -> bool:
         assert idx >= 0, idx
         try:
             data = bfh(hexdata)
-            self.verify_chunk(idx, data)
-            self.save_chunk(idx, data)
+            self.verify_chunk(idx, data, count)
+            self.save_chunk(idx, data, count)
             return True
         except BaseException as e:
             self.logger.info(f'verify_chunk idx {idx} failed: {repr(e)}')
             return False
-
+            
     def get_checkpoints(self):
         # for each chunk, store the hash of the last block and the target after the chunk
         cp = []
