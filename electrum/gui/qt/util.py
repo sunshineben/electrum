@@ -855,7 +855,7 @@ def read_QIcon(icon_basename):
 
 def get_default_language():
     name = QLocale.system().name()
-    return name if name in languages else 'zh_CN'
+    return name if name in languages else 'en_UK'
 
 class FromList(QTreeWidget):
     def __init__(self, parent, create_menu):
