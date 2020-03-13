@@ -172,6 +172,16 @@ _CHAINWORK_CACHE = {
     "0000000000000000000000000000000000000000000000000000000000000000": 0,  # virtual block at height -1
 }  # type: Dict[str, int]
 
+def get_header_offset(height):
+    if (height < constants.net.HDR_V4_HEIGHT):
+        offset = height * HEADER_SIZE
+    else: 
+        offset = constants.net.HDR_V4_OLD_LENGTH + (height-constants.net.HDR_V4_HEIGHT)*constants.net.HDR_V4_SIZE
+    return offset
+
+def get_delta_bytes(high, low):
+    delta_bytes = get_header_offset(high) - get_header_offset(low)
+    return delta_bytes
 
 class Blockchain(Logger):
     """
@@ -368,11 +378,7 @@ class Blockchain(Logger):
             return
         #delta_height = (index * 2016 - self.forkpoint)
         #delta_bytes = delta_height * HEADER_SIZE            
-        if (index * 2016 < constants.net.HDR_V4_HEIGHT):
-            delta_height = (index * 2016 - self.forkpoint)
-            delta_bytes = delta_height * HEADER_SIZE
-        else: # (index * 2016 >= constants.net.HDR_V4_HEIGHT)
-            delta_bytes = constants.net.HDR_V4_OLD_LENGTH + (index * 2016-constants.net.HDR_V4_HEIGHT)*constants.net.HDR_V4_SIZE
+        delta_bytes = get_delta_bytes(index * 2016, self.forkpoint)
         # if this chunk contains our forkpoint, only save the part after forkpoint
         # (the part before is the responsibility of the parent)
         if delta_bytes < 0:
@@ -409,13 +415,9 @@ class Blockchain(Logger):
         #if self.parent.get_chainwork() >= self.get_chainwork():
         #    return False
         self.logger.info(f"swapping {self.forkpoint} {self.parent.forkpoint}")
-        parent_branch_size = self.parent.height() - self.forkpoint + 1
-        # with issue +1 
-        if (self.parent.height() < constants.net.HDR_V4_HEIGHT):
-            delta_height = self.parent.height() - self.forkpoint + 1
-            parent_branch_size = delta_height * HEADER_SIZE
-        else: # ( >= constants.net.HDR_V4_HEIGHT)
-            parent_branch_size = constants.net.HDR_V4_OLD_LENGTH + (self.parent.height()-constants.net.HDR_V4_HEIGHT+1)*constants.net.HDR_V4_SIZE
+        #parent_branch_size = self.parent.height() - self.forkpoint + 1
+        # change from height to delta size
+        parent_branch_size = get_delta_bytes(self.parent().height(), self.base_height - 1)
 
         forkpoint = self.forkpoint  # type: Optional[int]
         parent = self.parent  # type: Optional[Blockchain]
@@ -431,7 +433,7 @@ class Blockchain(Logger):
         self.assert_headers_file_available(parent.path())
         assert forkpoint > parent.forkpoint, (f"forkpoint of parent chain ({parent.forkpoint}) "
                                               f"should be at lower height than children's ({forkpoint})")
-        delta_bytes = self.get_delta_bytes(forkpoint, parent.forkpoint)
+        delta_bytes = get_delta_bytes(forkpoint, parent.forkpoint)
         with open(parent.path(), 'rb') as f:
             #f.seek((forkpoint - parent.forkpoint)*HEADER_SIZE)
             #parent_data = f.read(parent_branch_size*HEADER_SIZE)
@@ -472,29 +474,6 @@ class Blockchain(Logger):
             raise FileNotFoundError('Lava headers_dir does not exist. Was it deleted while running?')
         else:
             raise FileNotFoundError('Cannot find headers file but headers_dir is there. Should be at {}'.format(path))
-
-    def get_delta_bytes(self, high, low):
-        #if (low == 0):
-        if (high < constants.net.HDR_V4_HEIGHT):
-            delta_height = (high - low)
-            delta_bytes = delta_height * HEADER_SIZE
-        else: # (high >= constants.net.HDR_V4_HEIGHT)
-            delta_bytes = constants.net.HDR_V4_OLD_LENGTH + (high-constants.net.HDR_V4_HEIGHT)*constants.net.HDR_V4_SIZE
-        return delta_bytes
-        # fixme : maybe bug in forking mode
-        if (high < constants.net.HDR_V4_HEIGHT):
-            if(low < constants.net.HDR_V4_HEIGHT):
-                delta_height = (high - low)
-                delta_bytes = delta_height * HEADER_SIZE
-            else:
-                delta_bytes = ((constants.net.HDR_V4_HEIGHT-1-high)*HEADER_SIZE + (low-constants.net.HDR_V4_HEIGHT+1)*constants.net.HDR_V4_SIZE)
-        else: # (high >= constants.net.HDR_V4_HEIGHT)
-            if(low >= constants.net.HDR_V4_HEIGHT):
-                delta_height = (high - low)
-                delta_bytes = delta_height * constants.net.HDR_V4_SIZE
-            else:
-                delta_bytes = ((constants.net.HDR_V4_HEIGHT-1-low)*HEADER_SIZE + (high-constants.net.HDR_V4_HEIGHT+1)*constants.net.HDR_V4_SIZE)
-        return delta_bytes
                 
     @with_lock
     def write(self, data: bytes, offset: int, truncate: bool=True) -> None:
@@ -521,7 +500,7 @@ class Blockchain(Logger):
         #assert len(data) == HEADER_SIZE
         assert (len(data) == HEADER_SIZE) or (len(data) == constants.net.HDR_V4_SIZE)
         #self.write(data, delta*HEADER_SIZE)
-        delta_bytes = self.get_delta_bytes(header.get('block_height'), self.forkpoint)
+        delta_bytes = get_delta_bytes(header.get('block_height'), self.forkpoint)
         self.write(data, delta_bytes)
         self.swap_with_parent()
 
@@ -543,7 +522,7 @@ class Blockchain(Logger):
         #        raise Exception('Expected to read a full header. This was only {} bytes'.format(len(h)))
         #if h == bytes([0])*HEADER_SIZE:
         #    return None
-        delta_bytes = self.get_delta_bytes(height, self.forkpoint)
+        delta_bytes = get_delta_bytes(height, self.forkpoint)
         if height >= constants.net.HDR_V4_HEIGHT:
             hd_size = constants.net.HDR_V4_SIZE
         else:
