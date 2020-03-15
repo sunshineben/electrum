@@ -417,7 +417,7 @@ class Blockchain(Logger):
         self.logger.info(f"swapping {self.forkpoint} {self.parent.forkpoint}")
         #parent_branch_size = self.parent.height() - self.forkpoint + 1
         # change from height to delta size
-        parent_branch_size = get_delta_bytes(self.parent().height(), self.base_height - 1)
+        parent_branch_size = get_delta_bytes(self.parent.height(), self.forkpoint - 1)
 
         forkpoint = self.forkpoint  # type: Optional[int]
         parent = self.parent  # type: Optional[Blockchain]
